@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const navItems = [
   {
@@ -19,6 +20,15 @@ const navItems = [
   },
 ];
 
+const polaroids = [
+  { src: "/photos/photo1.jpg", caption: "us 🤍", rotate: "-6deg", top: "6%", left: "2%", },
+  { src: "/photos/photo2.jpg", caption: "💕", rotate: "5deg", top: "4%", right: "3%", left: undefined, },
+  { src: "/photos/photo3.jpg", caption: "forever", rotate: "-4deg", top: "42%", left: "1%", },
+  { src: "/photos/photo4.jpg", caption: "🌙", rotate: "6deg", top: "40%", right: "2%", left: undefined, },
+  { src: "/photos/photo5.jpg", caption: "our fave", rotate: "-3deg", bottom: "6%", left: "3%", top: undefined, },
+  { src: "/photos/photo6.jpg", caption: "✨", rotate: "4deg", bottom: "5%", right: "3%", left: undefined, top: undefined, },
+];
+
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16 relative overflow-hidden">
@@ -30,16 +40,51 @@ export default function Home() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-blush-dim opacity-5 blur-[80px]" />
       </div>
 
+      {/* Scattered Polaroids */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        {polaroids.map((p, i) => (
+          <div
+            key={i}
+            className="absolute w-32 opacity-60"
+            style={{
+              top: p.top,
+              bottom: (p as any).bottom,
+              left: p.left,
+              right: p.right,
+              transform: `rotate(${p.rotate})`,
+            }}
+          >
+            {/* Polaroid frame */}
+            <div className="bg-white p-2 pb-7 shadow-2xl shadow-black/40">
+              <div className="relative w-full aspect-square overflow-hidden bg-dusk">
+                <Image
+                  src={p.src}
+                  alt={p.caption}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <p
+                className="text-center mt-1 text-[10px] text-black/60 leading-none"
+                style={{ fontFamily: "Caveat, cursive" }}
+              >
+                {p.caption}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Header */}
       <div className="text-center mb-14 relative z-10">
         <p className="font-caveat text-blush text-xl mb-2 tracking-wide">
-          ✦ est. 12/15/25 ✦
+          ✦ est. 2024 ✦
         </p>
         <h1 className="font-playfair text-5xl md:text-6xl text-cream leading-tight mb-3">
-          🐇 our little world 🦖
+          our little world
         </h1>
         <p className="font-dm text-muted text-sm tracking-widest uppercase">
-          -- our space --
+          a space just for us
         </p>
       </div>
 
@@ -60,7 +105,6 @@ export default function Home() {
                   }
                 `}
               >
-                {/* Card glow on hover */}
                 <div
                   className={`
                     absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl
@@ -70,8 +114,6 @@ export default function Home() {
                     }
                   `}
                 />
-
-                {/* Top row */}
                 <div className="flex items-start justify-between mb-5">
                   <div>
                     <span className="text-2xl mb-2 block">{item.emoji}</span>
@@ -83,7 +125,6 @@ export default function Home() {
                       {item.sublabel}
                     </p>
                   </div>
-                  {/* Spotify-style play button */}
                   <div
                     className={`
                       w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
@@ -97,8 +138,6 @@ export default function Home() {
                     </svg>
                   </div>
                 </div>
-
-                {/* Fake "track list" */}
                 <div className="space-y-2 border-t border-white/5 pt-4">
                   {item.tracks.map((track, i) => (
                     <div key={i} className="flex items-center gap-3">
@@ -108,7 +147,6 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-
               </div>
             </Link>
           );
