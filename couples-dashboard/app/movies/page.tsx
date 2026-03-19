@@ -12,8 +12,8 @@ type Movie = {
 };
 
 const GENRES = [
-  "Action","Comedy","Drama","Horror",
-  "Sci-Fi","Romance","Thriller","Animation","Fantasy","Disney",
+  "action","comedy","drama","horror",
+  "sci-fi","romance","thriller","animation","fantasy","disney",
 ];
 
 export default function MoviesPage() {
@@ -131,7 +131,7 @@ export default function MoviesPage() {
 
         <div className="mb-8">
           <p className="font-caveat text-periwinkle text-lg mb-1">🎬 our watchlist</p>
-          <h1 className="font-playfair text-4xl text-cream">Movies We've Watched</h1>
+          <h1 className="font-playfair text-4xl text-cream">movies we've watched</h1>
           <p className="font-dm text-muted text-sm mt-2">
             {movies.length} total · {movies.filter(m => !m.watched).length} to watch · {movies.filter(m => m.watched).length} watched
           </p>
@@ -142,7 +142,7 @@ export default function MoviesPage() {
           <div className="flex flex-col sm:flex-row gap-3 mb-3">
             <input
               className="flex-1 bg-velvet border border-white/10 rounded-xl px-4 py-3 text-cream font-dm text-sm outline-none focus:border-periwinkle/50 transition-colors placeholder:text-muted"
-              placeholder="Add a movie..."
+              placeholder="add a movie ^_^"
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addMovie()}
@@ -158,14 +158,14 @@ export default function MoviesPage() {
               onClick={addMovie}
               className="bg-periwinkle text-velvet font-dm font-semibold text-sm px-5 py-3 rounded-xl hover:opacity-90 hover:-translate-y-0.5 transition-all"
             >
-              Add
+              add
             </button>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               className="flex-1 bg-velvet border border-white/10 rounded-xl px-4 py-2.5 text-cream font-dm text-sm outline-none focus:border-periwinkle/50 transition-colors placeholder:text-muted"
-              placeholder="Search by name or genre..."
+              placeholder="search by name or genre ^_^"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -174,16 +174,16 @@ export default function MoviesPage() {
               value={sort}
               onChange={(e) => setSort(e.target.value)}
             >
-              <option value="default">Sort</option>
-              <option value="nameAsc">Name (A–Z)</option>
-              <option value="nameDesc">Name (Z–A)</option>
-              <option value="genre">Genre</option>
+              <option value="default">sort</option>
+              <option value="nameAsc">name (a–z)</option>
+              <option value="nameDesc">name (z–a)</option>
+              <option value="genre">genre</option>
             </select>
             <button
               onClick={clearAll}
               className="bg-dusk-light border border-white/10 text-muted hover:text-cream font-dm text-sm px-4 py-2.5 rounded-xl transition-all"
             >
-              Clear All
+              clear all
             </button>
           </div>
         </div>
@@ -193,9 +193,9 @@ export default function MoviesPage() {
         ) : (
           <>
             <section className="mb-8">
-              <h2 className="font-caveat text-blush text-xl mb-3">🐇 To Watch</h2>
+              <h2 className="font-caveat text-blush text-xl mb-3">🐇 to watch</h2>
               {toWatch.length === 0 ? (
-                <p className="font-dm text-muted text-sm text-center py-6">No movies yet 🎬</p>
+                <p className="font-dm text-muted text-sm text-center py-6">no movies yet 🎬</p>
               ) : (
                 <ul className="space-y-3">
                   {toWatch.map((m) => (
@@ -212,9 +212,9 @@ export default function MoviesPage() {
             </section>
 
             <section>
-              <h2 className="font-caveat text-periwinkle text-xl mb-3">🦖 Watched</h2>
+              <h2 className="font-caveat text-periwinkle text-xl mb-3">🦖 watched</h2>
               {watched.length === 0 ? (
-                <p className="font-dm text-muted text-sm text-center py-6">Nothing watched yet 👀</p>
+                <p className="font-dm text-muted text-sm text-center py-6">nothing watched yet 👀</p>
               ) : (
                 <ul className="space-y-3">
                   {watched.map((m) => (
@@ -275,7 +275,7 @@ function MovieCard({
           </span>
         )}
         <span className="font-caveat text-muted text-xs">
-          🎭 {movie.genre} · Added: {movie.date}
+          🎭 {movie.genre} · added: {movie.date}
         </span>
       </div>
 
@@ -285,7 +285,7 @@ function MovieCard({
             onClick={() => onSaveEdit(movie.id)}
             className="text-xs bg-periwinkle text-velvet px-3 py-1.5 rounded-lg font-dm font-semibold hover:opacity-90 transition-all"
           >
-            Save
+            save
           </button>
         ) : (
           <>
@@ -294,7 +294,7 @@ function MovieCard({
               className={`text-xs px-3 py-1.5 rounded-lg font-dm font-medium transition-all hover:opacity-90
                 ${isBlush ? "bg-blush/10 text-blush hover:bg-blush/20" : "bg-periwinkle/10 text-periwinkle hover:bg-periwinkle/20"}`}
             >
-              {movie.watched ? "🐇 Move Back" : "🦖 Watched"}
+              {movie.watched ? "🐇 move back" : "🦖 watched"}
             </button>
             <button
               onClick={() => { setEditingId(movie.id); setEditingName(movie.name); }}
