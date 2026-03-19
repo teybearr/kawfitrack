@@ -13,7 +13,7 @@ type Place = {
 };
 
 const CATEGORIES = [
-  "cafe", "museum", "nature",
+  "cafe", "museum", "nature", "restaurant",
   "food spot", "activity", "arcade",
 ];
 
