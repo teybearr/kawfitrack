@@ -6,30 +6,29 @@ import { supabase } from "@/lib/supabase";
 type Place = {
   id: string;
   name: string;
+  city: string;
   category: string[];
   visited: boolean;
-  date: string;
+  is_favorite: boolean;
 };
 
 const CATEGORIES = [
-  "cafe", "restaurant", "museum", "nature",
-  "food spot", "adventure", "activity",
+  "cafe", "museum", "nature",
+  "food spot", "activity", "arcade",
 ];
 
 export default function DatesPage() {
   const [places, setPlaces] = useState<Place[]>([]);
   const [nameInput, setNameInput] = useState("");
+  const [cityInput, setCityInput] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [visitedInput, setVisitedInput] = useState(false);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("default");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchPlaces();
-  }, []);
+  useEffect(() => { fetchPlaces(); }, []);
 
   async function fetchPlaces() {
     setLoading(true);
@@ -55,9 +54,10 @@ export default function DatesPage() {
     }
     const newPlace = {
       name: nameInput.trim(),
+      city: cityInput.trim(),
       category: selectedCategories,
-      visited: visitedInput,
-      date: new Date().toLocaleDateString(),
+      visited: false,
+      is_favorite: false,
     };
     const { data, error } = await supabase
       .from("places")
@@ -66,6 +66,7 @@ export default function DatesPage() {
       .single();
     if (!error && data) setPlaces((prev) => [data, ...prev]);
     setNameInput("");
+    setCityInput("");
     setSelectedCategories([]);
   }
 
@@ -105,12 +106,31 @@ export default function DatesPage() {
     if (!error) setPlaces([]);
   }
 
+  async function toggleFavorite(id: string) {
+    const place = places.find((p) => p.id === id);
+    if (!place) return;
+    const favorites = places.filter((p) => p.is_favorite && p.id !== id);
+    if (!place.is_favorite && favorites.length >= 3) {
+      alert("you can only have 3 favorites! remove one first ★");
+      return;
+    }
+    const { error } = await supabase
+      .from("places")
+      .update({ is_favorite: !place.is_favorite })
+      .eq("id", id);
+    if (!error)
+      setPlaces((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, is_favorite: !p.is_favorite } : p))
+      );
+  }
+
   const filtered = useMemo(() => {
     let list = [...places];
     if (search) {
       list = list.filter(
         (p) =>
           p.name.toLowerCase().includes(search.toLowerCase()) ||
+          p.city?.toLowerCase().includes(search.toLowerCase()) ||
           p.category.some((c) => c.toLowerCase().includes(search.toLowerCase()))
       );
     }
@@ -140,8 +160,8 @@ export default function DatesPage() {
         </Link>
 
         <div className="mb-8">
-          <p className="font-caveat text-blush text-lg mb-1">📍 where have we been thooooo</p>
-          <h1 className="font-playfair text-4xl text-cream">date places we've been</h1>
+          <p className="font-caveat text-blush text-lg mb-1">📍 our adventures</p>
+          <h1 className="font-playfair text-4xl text-cream">places we've been</h1>
           <p className="font-dm text-muted text-sm mt-2">
             {places.length} total · {places.filter(p => !p.visited).length} to visit · {places.filter(p => p.visited).length} visited
           </p>
@@ -150,23 +170,22 @@ export default function DatesPage() {
         {/* Add place */}
         <div className="bg-dusk border border-blush/20 rounded-2xl p-5 mb-6">
 
-          {/* Name + status + add button */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          {/* Name + city */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-3">
             <input
               className="flex-1 bg-velvet border border-white/10 rounded-xl px-4 py-3 text-cream font-dm text-sm outline-none focus:border-blush/50 transition-colors placeholder:text-muted"
-              placeholder="add a place ^_^"
+              placeholder="place name ^_^"
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addPlace()}
             />
-            <select
-              className="bg-velvet border border-white/10 rounded-xl px-4 py-3 text-cream font-dm text-sm outline-none focus:border-blush/50 transition-colors"
-              value={visitedInput ? "true" : "false"}
-              onChange={(e) => setVisitedInput(e.target.value === "true")}
-            >
-              <option value="false">📍 to visit</option>
-              <option value="true">✅ visited</option>
-            </select>
+            <input
+              className="flex-1 bg-velvet border border-white/10 rounded-xl px-4 py-3 text-cream font-dm text-sm outline-none focus:border-blush/50 transition-colors placeholder:text-muted"
+              placeholder="city"
+              value={cityInput}
+              onChange={(e) => setCityInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addPlace()}
+            />
             <button
               onClick={addPlace}
               className="bg-blush text-velvet font-dm font-semibold text-sm px-5 py-3 rounded-xl hover:opacity-90 hover:-translate-y-0.5 transition-all"
@@ -204,7 +223,7 @@ export default function DatesPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               className="flex-1 bg-velvet border border-white/10 rounded-xl px-4 py-2.5 text-cream font-dm text-sm outline-none focus:border-blush/50 transition-colors placeholder:text-muted"
-              placeholder="search by name or category ^_^"
+              placeholder="search by name, city or category..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -241,7 +260,8 @@ export default function DatesPage() {
                       key={p.id} place={p}
                       editingId={editingId} editingName={editingName}
                       setEditingId={setEditingId} setEditingName={setEditingName}
-                      onToggle={toggleVisited} onDelete={deletePlace} onSaveEdit={saveEdit}
+                      onToggle={toggleVisited} onDelete={deletePlace}
+                      onSaveEdit={saveEdit} onToggleFavorite={toggleFavorite}
                       accent="blush"
                     />
                   ))}
@@ -260,7 +280,8 @@ export default function DatesPage() {
                       key={p.id} place={p}
                       editingId={editingId} editingName={editingName}
                       setEditingId={setEditingId} setEditingName={setEditingName}
-                      onToggle={toggleVisited} onDelete={deletePlace} onSaveEdit={saveEdit}
+                      onToggle={toggleVisited} onDelete={deletePlace}
+                      onSaveEdit={saveEdit} onToggleFavorite={toggleFavorite}
                       accent="periwinkle"
                     />
                   ))}
@@ -277,7 +298,7 @@ export default function DatesPage() {
 
 function PlaceCard({
   place, editingId, editingName, setEditingId, setEditingName,
-  onToggle, onDelete, onSaveEdit, accent,
+  onToggle, onDelete, onSaveEdit, onToggleFavorite, accent,
 }: {
   place: Place;
   editingId: string | null;
@@ -287,6 +308,7 @@ function PlaceCard({
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onSaveEdit: (id: string) => void;
+  onToggleFavorite: (id: string) => void;
   accent: "blush" | "periwinkle";
 }) {
   const isBlush = accent === "blush";
@@ -308,12 +330,18 @@ function PlaceCard({
             autoFocus
           />
         ) : (
-          <span className={`font-dm text-sm font-medium truncate ${place.visited ? "line-through text-muted" : "text-cream"}`}>
+          <span className="font-dm text-sm font-medium truncate text-cream">
             {place.name}
+            {place.city && (
+              <span className="font-dm text-xs text-muted ml-2" style={{ textDecoration: "none" }}>
+                · {place.city}
+              </span>
+            )}
           </span>
         )}
-        {/* Category pills on card */}
-        <div className="flex flex-wrap gap-1 mt-1">
+
+        {/* Category pills */}
+        <div className="flex flex-wrap gap-1 mt-0.5">
           {(Array.isArray(place.category) ? place.category : [place.category]).map((cat) => (
             <span
               key={cat}
@@ -324,7 +352,6 @@ function PlaceCard({
             </span>
           ))}
         </div>
-        <span className="font-caveat text-muted text-xs">added: {place.date}</span>
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">
@@ -333,16 +360,24 @@ function PlaceCard({
             onClick={() => onSaveEdit(place.id)}
             className="text-xs bg-blush text-velvet px-3 py-1.5 rounded-lg font-dm font-semibold hover:opacity-90 transition-all"
           >
-            Save
+            save
           </button>
         ) : (
           <>
+            <button
+              onClick={() => onToggleFavorite(place.id)}
+              className="text-sm px-2 py-1.5 transition-colors hover:scale-110"
+              style={{ color: place.is_favorite ? "#f4a7c0" : "#6b5f7a" }}
+              title={place.is_favorite ? "remove from favorites" : "add to favorites"}
+            >
+              {place.is_favorite ? "★" : "☆"}
+            </button>
             <button
               onClick={() => onToggle(place.id)}
               className={`text-xs px-3 py-1.5 rounded-lg font-dm font-medium transition-all hover:opacity-90
                 ${isBlush ? "bg-blush/10 text-blush hover:bg-blush/20" : "bg-periwinkle/10 text-periwinkle hover:bg-periwinkle/20"}`}
             >
-              {place.visited ? "🐇 move back" : "🦖 visited"}
+              {place.visited ? "↩️ move back" : "✅ visited"}
             </button>
             <button
               onClick={() => { setEditingId(place.id); setEditingName(place.name); }}

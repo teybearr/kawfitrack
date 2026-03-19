@@ -8,6 +8,7 @@ type Movie = {
   name: string;
   genre: string[];
   watched: boolean;
+  is_favorite: boolean;
 };
 
 const GENRES = [
@@ -25,9 +26,7 @@ export default function MoviesPage() {
   const [editingName, setEditingName] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchMovies();
-  }, []);
+  useEffect(() => { fetchMovies(); }, []);
 
   async function fetchMovies() {
     setLoading(true);
@@ -55,6 +54,7 @@ export default function MoviesPage() {
       name: nameInput.trim(),
       genre: selectedGenres,
       watched: false,
+      is_favorite: false,
     };
     const { data, error } = await supabase
       .from("movies")
@@ -102,6 +102,24 @@ export default function MoviesPage() {
     if (!error) setMovies([]);
   }
 
+  async function toggleFavorite(id: string) {
+    const movie = movies.find((m) => m.id === id);
+    if (!movie) return;
+    const favorites = movies.filter((m) => m.is_favorite && m.id !== id);
+    if (!movie.is_favorite && favorites.length >= 3) {
+      alert("you can only have 3 favorites! remove one first ★");
+      return;
+    }
+    const { error } = await supabase
+      .from("movies")
+      .update({ is_favorite: !movie.is_favorite })
+      .eq("id", id);
+    if (!error)
+      setMovies((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, is_favorite: !m.is_favorite } : m))
+      );
+  }
+
   const filtered = useMemo(() => {
     let list = [...movies];
     if (search) {
@@ -146,8 +164,6 @@ export default function MoviesPage() {
 
         {/* Add movie */}
         <div className="bg-dusk border border-periwinkle/20 rounded-2xl p-5 mb-6">
-
-          {/* Name + add button */}
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <input
               className="flex-1 bg-velvet border border-white/10 rounded-xl px-4 py-3 text-cream font-dm text-sm outline-none focus:border-periwinkle/50 transition-colors placeholder:text-muted"
@@ -230,7 +246,8 @@ export default function MoviesPage() {
                       key={m.id} movie={m}
                       editingId={editingId} editingName={editingName}
                       setEditingId={setEditingId} setEditingName={setEditingName}
-                      onToggle={toggleWatched} onDelete={deleteMovie} onSaveEdit={saveEdit}
+                      onToggle={toggleWatched} onDelete={deleteMovie}
+                      onSaveEdit={saveEdit} onToggleFavorite={toggleFavorite}
                       accent="blush"
                     />
                   ))}
@@ -249,7 +266,8 @@ export default function MoviesPage() {
                       key={m.id} movie={m}
                       editingId={editingId} editingName={editingName}
                       setEditingId={setEditingId} setEditingName={setEditingName}
-                      onToggle={toggleWatched} onDelete={deleteMovie} onSaveEdit={saveEdit}
+                      onToggle={toggleWatched} onDelete={deleteMovie}
+                      onSaveEdit={saveEdit} onToggleFavorite={toggleFavorite}
                       accent="periwinkle"
                     />
                   ))}
@@ -266,7 +284,7 @@ export default function MoviesPage() {
 
 function MovieCard({
   movie, editingId, editingName, setEditingId, setEditingName,
-  onToggle, onDelete, onSaveEdit, accent,
+  onToggle, onDelete, onSaveEdit, onToggleFavorite, accent,
 }: {
   movie: Movie;
   editingId: string | null;
@@ -276,6 +294,7 @@ function MovieCard({
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onSaveEdit: (id: string) => void;
+  onToggleFavorite: (id: string) => void;
   accent: "blush" | "periwinkle";
 }) {
   const isBlush = accent === "blush";
@@ -297,11 +316,10 @@ function MovieCard({
             autoFocus
           />
         ) : (
-          <span className={`font-dm text-sm font-medium truncate ${movie.watched ? "line-through text-muted" : "text-cream"}`}>
+          <span className="font-dm text-sm font-medium truncate text-cream">
             {movie.name}
           </span>
         )}
-        {/* Genre pills on card */}
         <div className="flex flex-wrap gap-1 mt-1">
           {(Array.isArray(movie.genre) ? movie.genre : [movie.genre]).map((g) => (
             <span
@@ -325,6 +343,14 @@ function MovieCard({
           </button>
         ) : (
           <>
+            <button
+              onClick={() => onToggleFavorite(movie.id)}
+              className="text-sm px-2 py-1.5 transition-colors hover:scale-110"
+              style={{ color: movie.is_favorite ? "#f4a7c0" : "#6b5f7a" }}
+              title={movie.is_favorite ? "remove from favorites" : "add to favorites"}
+            >
+              {movie.is_favorite ? "★" : "☆"}
+            </button>
             <button
               onClick={() => onToggle(movie.id)}
               className={`text-xs px-3 py-1.5 rounded-lg font-dm font-medium transition-all hover:opacity-90
