@@ -11,8 +11,8 @@ type Movie = {
 };
 
 const GENRES = [
-  "Action","Comedy","Drama","Horror",
-  "Sci-Fi","Romance","Thriller","Animation","Fantasy","Disney",
+  "animation","fantasy","disney","action","comedy","drama","horror",
+  "sci-fi","romance","thriller",
 ];
 
 export default function MoviesPage() {
