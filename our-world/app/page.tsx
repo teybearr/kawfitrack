@@ -146,9 +146,8 @@ export default async function Home() {
         })}
       </div>
 
-      {/* Days counter */}
       {(() => {
-        const start = new Date("2025-12-15");
+        const start = new Date("2025-12-15T14:00:00");
         const now = new Date();
         const days = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
         return (
