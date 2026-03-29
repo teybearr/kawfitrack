@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 
 export const revalidate = 0;
 
+{/* navigation items */}
 const navItems = [
   {
     href: "/dates",
@@ -23,6 +24,7 @@ const navItems = [
   },
 ];
 
+{/* pictures */}
 const polaroids = [
   { src: "/photos/photo1.jpg", caption: "02.20.26", rotate: "-6deg", top: "6%", left: "2%" },
   { src: "/photos/photo2.jpg", caption: "02.13.26", rotate: "5deg", top: "4%", right: "3%" },
@@ -32,31 +34,33 @@ const polaroids = [
   { src: "/photos/photo6.jpg", caption: "01.29.26", rotate: "4deg", bottom: "5%", right: "3%" },
 ];
 
+
 export default async function Home() {
   const [{ data: favPlaces }, { data: favMovies }] = await Promise.all([
     supabase.from("places").select("name").eq("is_favorite", true).limit(3),
     supabase.from("movies").select("name").eq("is_favorite", true).limit(3),
   ]);
 
+  {/* if no favorites, show fallback */}
   const placeTracks = favPlaces && favPlaces.length > 0
     ? favPlaces.map((p) => p.name)
     : navItems[0].fallback;
-
   const movieTracks = favMovies && favMovies.length > 0
     ? favMovies.map((m) => m.name)
     : navItems[1].fallback;
-
   const tracks = [placeTracks, movieTracks];
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16 relative overflow-hidden">
 
+      {/* background blobs */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blush opacity-10 blur-[120px]" />
         <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-periwinkle opacity-10 blur-[120px]" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-blush-dim opacity-5 blur-[80px]" />
       </div>
 
+      {/* polaroid pics */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         {polaroids.map((p, i) => (
           <div
@@ -83,6 +87,7 @@ export default async function Home() {
         ))}
       </div>
 
+      {/* main stuff */}  
       <div className="text-center mb-14 relative z-10">
         <p className="font-caveat text-blush text-xl mb-2 tracking-wide">✦ est. mar 2026 ✦</p>
         <h1 className="font-playfair text-5xl md:text-6xl text-cream leading-tight mb-3">
@@ -91,6 +96,7 @@ export default async function Home() {
         <p className="font-dm text-muted text-sm tracking-widest">a space just for us</p>
       </div>
 
+      {/* nav cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl relative z-10 mb-10">
         {navItems.map((item, idx) => {
           const isBlush = item.accent === "blush";
@@ -146,6 +152,7 @@ export default async function Home() {
         })}
       </div>
 
+      {/* days counter */}
       {(() => {
         const start = new Date("2025-12-15T14:00:00");
         const now = new Date();
@@ -161,6 +168,7 @@ export default async function Home() {
         );
       })()}
 
+      {/* cute lil emojis at the bottom */}
       <p className="font-caveat text-muted text-sm mt-14 relative z-7">🌀🎀</p>
     </main>
   );

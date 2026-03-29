@@ -11,11 +11,13 @@ type Movie = {
   is_favorite: boolean;
 };
 
+{/* for genre picking */}
 const GENRES = [
   "animation","fantasy","disney","action","comedy","drama","horror",
   "sci-fi","romance","thriller",
 ];
 
+{/* revalidate every time para fresh mwehe */}
 export default function MoviesPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [nameInput, setNameInput] = useState("");
@@ -26,8 +28,10 @@ export default function MoviesPage() {
   const [editingName, setEditingName] = useState("");
   const [loading, setLoading] = useState(true);
 
+  {/* fetch movies on load */}
   useEffect(() => { fetchMovies(); }, []);
 
+  {/* fetch movies from supabase */}
   async function fetchMovies() {
     setLoading(true);
     const { data, error } = await supabase
@@ -38,12 +42,14 @@ export default function MoviesPage() {
     setLoading(false);
   }
 
+  {/* toggle genre selection for new movie */}
   function toggleGenre(g: string) {
     setSelectedGenres((prev) =>
       prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]
     );
   }
 
+  {/* add new movie to supabase */}
   async function addMovie() {
     if (!nameInput.trim()) return;
     if (selectedGenres.length === 0) {
@@ -66,6 +72,7 @@ export default function MoviesPage() {
     setSelectedGenres([]);
   }
 
+  {/* toggle watched status for a movie and update supabase */}
   async function toggleWatched(id: string) {
     const movie = movies.find((m) => m.id === id);
     if (!movie) return;
@@ -79,11 +86,13 @@ export default function MoviesPage() {
       );
   }
 
+  {/* delete a movie from supabase*/}
   async function deleteMovie(id: string) {
     const { error } = await supabase.from("movies").delete().eq("id", id);
     if (!error) setMovies((prev) => prev.filter((m) => m.id !== id));
   }
 
+  {/* save edited movie name to supabase */}
   async function saveEdit(id: string) {
     const { error } = await supabase
       .from("movies")
@@ -96,12 +105,14 @@ export default function MoviesPage() {
     setEditingId(null);
   }
 
+  {/* clear all movies from supabase */}
   async function clearAll() {
     if (!confirm("Delete all movies?")) return;
     const { error } = await supabase.from("movies").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     if (!error) setMovies([]);
   }
 
+  {/* toggle favorite status of a movie and update supabase */}
   async function toggleFavorite(id: string) {
     const movie = movies.find((m) => m.id === id);
     if (!movie) return;
@@ -120,6 +131,7 @@ export default function MoviesPage() {
       );
   }
 
+  {/* filter and sort movies based on search and sort state */}
   const filtered = useMemo(() => {
     let list = [...movies];
     if (search) {
@@ -134,9 +146,11 @@ export default function MoviesPage() {
     return list;
   }, [movies, search, sort]);
 
+  {/* separate movies into to-watch and watched lists */}
   const toWatch = filtered.filter((m) => !m.watched);
   const watched = filtered.filter((m) => m.watched);
 
+  {/* nav items for home page cards */}
   return (
     <main className="min-h-screen px-6 py-12 relative overflow-hidden">
 
@@ -146,7 +160,6 @@ export default function MoviesPage() {
       </div>
 
       <div className="max-w-2xl mx-auto relative z-10">
-
         <Link href="/" className="inline-flex items-center gap-2 text-muted hover:text-cream transition-colors mb-8 font-dm text-sm">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -154,6 +167,7 @@ export default function MoviesPage() {
           back home
         </Link>
 
+        {/* page title and stats */}
         <div className="mb-8">
           <p className="font-caveat text-periwinkle text-lg mb-1">🎬 what to watch thoooooo</p>
           <h1 className="font-playfair text-4xl text-cream">movies we've watched</h1>
@@ -162,7 +176,7 @@ export default function MoviesPage() {
           </p>
         </div>
 
-        {/* Add movie */}
+        {/* add movie */}
         <div className="bg-dusk border border-periwinkle/20 rounded-2xl p-5 mb-6">
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <input
@@ -180,7 +194,7 @@ export default function MoviesPage() {
             </button>
           </div>
 
-          {/* Genre pills */}
+          {/* genre picking */}
           <div className="mb-4">
             <p className="font-caveat text-muted text-sm mb-2">pick genres:</p>
             <div className="flex flex-wrap gap-2">
@@ -205,7 +219,7 @@ export default function MoviesPage() {
             </div>
           </div>
 
-          {/* Search & sort */}
+          {/* search n sort */}
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               className="flex-1 bg-velvet border border-white/10 rounded-xl px-4 py-2.5 text-cream font-dm text-sm outline-none focus:border-periwinkle/50 transition-colors placeholder:text-muted"
@@ -231,6 +245,7 @@ export default function MoviesPage() {
           </div>
         </div>
 
+        {/* movie lists */}
         {loading ? (
           <p className="font-caveat text-muted text-center text-lg py-12">loading our movies... 🎬</p>
         ) : (
@@ -282,6 +297,7 @@ export default function MoviesPage() {
   );
 }
 
+{/* component for each movie card in the lists */}
 function MovieCard({
   movie, editingId, editingName, setEditingId, setEditingName,
   onToggle, onDelete, onSaveEdit, onToggleFavorite, accent,
@@ -300,12 +316,15 @@ function MovieCard({
   const isBlush = accent === "blush";
   const isEditing = editingId === movie.id;
 
+  {/* card for each movie */}
   return (
     <li className={`
       bg-dusk border rounded-xl p-4 flex items-center justify-between gap-4
       hover:-translate-y-0.5 hover:shadow-xl transition-all duration-200
       ${isBlush ? "border-blush/10 hover:border-blush/30" : "border-periwinkle/10 hover:border-periwinkle/30"}
     `}>
+
+      {/* movie name and genres */}
       <div className="flex flex-col gap-1 flex-1 min-w-0">
         {isEditing ? (
           <input
@@ -320,6 +339,8 @@ function MovieCard({
             {movie.name}
           </span>
         )}
+
+        {/* genres for each movie */}
         <div className="flex flex-wrap gap-1 mt-1">
           {(Array.isArray(movie.genre) ? movie.genre : [movie.genre]).map((g) => (
             <span
@@ -333,6 +354,7 @@ function MovieCard({
         </div>
       </div>
 
+      {/* buttons for each movie card */}
       <div className="flex items-center gap-2 flex-shrink-0">
         {isEditing ? (
           <button

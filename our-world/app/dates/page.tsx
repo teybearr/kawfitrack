@@ -12,11 +12,13 @@ type Place = {
   is_favorite: boolean;
 };
 
+{/* for categories picking */}
 const CATEGORIES = [
   "cafe", "museum", "nature", "restaurant",
   "food spot", "activity", "arcade",
 ];
 
+{/* revalidate every time para fresh mwehe */}
 export default function DatesPage() {
   const [places, setPlaces] = useState<Place[]>([]);
   const [nameInput, setNameInput] = useState("");
@@ -28,8 +30,10 @@ export default function DatesPage() {
   const [editingName, setEditingName] = useState("");
   const [loading, setLoading] = useState(true);
 
+  {/* fetch places on load */}
   useEffect(() => { fetchPlaces(); }, []);
 
+  {/* fetch places from supabase */}
   async function fetchPlaces() {
     setLoading(true);
     const { data, error } = await supabase
@@ -40,12 +44,14 @@ export default function DatesPage() {
     setLoading(false);
   }
 
+  {/* toggle category selection for new place */}
   function toggleCategory(cat: string) {
     setSelectedCategories((prev) =>
       prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
     );
   }
 
+  {/* add new place to supabase */}
   async function addPlace() {
     if (!nameInput.trim()) return;
     if (selectedCategories.length === 0) {
@@ -70,6 +76,7 @@ export default function DatesPage() {
     setSelectedCategories([]);
   }
 
+  {/* toggle visited status of a place and update supabase */}
   async function toggleVisited(id: string) {
     const place = places.find((p) => p.id === id);
     if (!place) return;
@@ -83,11 +90,13 @@ export default function DatesPage() {
       );
   }
 
+  {/* delete a place from supabase */}
   async function deletePlace(id: string) {
     const { error } = await supabase.from("places").delete().eq("id", id);
     if (!error) setPlaces((prev) => prev.filter((p) => p.id !== id));
   }
 
+  {/* save edited place name to supabase */}
   async function saveEdit(id: string) {
     const { error } = await supabase
       .from("places")
@@ -100,12 +109,14 @@ export default function DatesPage() {
     setEditingId(null);
   }
 
+  {/* clear all places from supabase */}
   async function clearAll() {
     if (!confirm("Delete all places?")) return;
     const { error } = await supabase.from("places").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     if (!error) setPlaces([]);
   }
 
+  {/* toggle favorite status of a place and update supabase */}
   async function toggleFavorite(id: string) {
     const place = places.find((p) => p.id === id);
     if (!place) return;
@@ -124,6 +135,7 @@ export default function DatesPage() {
       );
   }
 
+  {/* filter and sort places based on search and sort state */}
   const filtered = useMemo(() => {
     let list = [...places];
     if (search) {
@@ -139,9 +151,11 @@ export default function DatesPage() {
     return list;
   }, [places, search, sort]);
 
+  {/* separate places into to-visit and visited lists */}
   const toVisit = filtered.filter((p) => !p.visited);
   const visited = filtered.filter((p) => p.visited);
 
+  {/* nav items for home page cards */}
   return (
     <main className="min-h-screen px-6 py-12 relative overflow-hidden">
 
@@ -159,6 +173,7 @@ export default function DatesPage() {
           back home
         </Link>
 
+        {/* page title and stats */}
         <div className="mb-8">
           <p className="font-caveat text-blush text-lg mb-1">📍 our adventures</p>
           <h1 className="font-playfair text-4xl text-cream">places we've been</h1>
@@ -167,10 +182,10 @@ export default function DatesPage() {
           </p>
         </div>
 
-        {/* Add place */}
+        {/* add place */}
         <div className="bg-dusk border border-blush/20 rounded-2xl p-5 mb-6">
 
-          {/* Name + city */}
+          {/* put name and city */}
           <div className="flex flex-col sm:flex-row gap-3 mb-3">
             <input
               className="flex-1 bg-velvet border border-white/10 rounded-xl px-4 py-3 text-cream font-dm text-sm outline-none focus:border-blush/50 transition-colors placeholder:text-muted"
@@ -194,7 +209,7 @@ export default function DatesPage() {
             </button>
           </div>
 
-          {/* Category pills */}
+          {/* category picking */}
           <div className="mb-4">
             <p className="font-caveat text-muted text-sm mb-2">pick categories:</p>
             <div className="flex flex-wrap gap-2">
@@ -219,7 +234,7 @@ export default function DatesPage() {
             </div>
           </div>
 
-          {/* Search & sort */}
+          {/* search n sort */}
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               className="flex-1 bg-velvet border border-white/10 rounded-xl px-4 py-2.5 text-cream font-dm text-sm outline-none focus:border-blush/50 transition-colors placeholder:text-muted"
@@ -245,6 +260,7 @@ export default function DatesPage() {
           </div>
         </div>
 
+        {/* places lists */}
         {loading ? (
           <p className="font-caveat text-muted text-center text-lg py-12">loading our places... 📍</p>
         ) : (
@@ -296,6 +312,7 @@ export default function DatesPage() {
   );
 }
 
+{/* component for each place card in the lists */}
 function PlaceCard({
   place, editingId, editingName, setEditingId, setEditingName,
   onToggle, onDelete, onSaveEdit, onToggleFavorite, accent,
@@ -314,12 +331,15 @@ function PlaceCard({
   const isBlush = accent === "blush";
   const isEditing = editingId === place.id;
 
+  {/* card for each place */}
   return (
     <li className={`
       bg-dusk border rounded-xl p-4 flex items-center justify-between gap-4
       hover:-translate-y-0.5 hover:shadow-xl transition-all duration-200
       ${isBlush ? "border-blush/10 hover:border-blush/30" : "border-periwinkle/10 hover:border-periwinkle/30"}
     `}>
+
+      {/* name, city and category */}
       <div className="flex flex-col gap-1 flex-1 min-w-0">
         {isEditing ? (
           <input
@@ -340,7 +360,7 @@ function PlaceCard({
           </span>
         )}
 
-        {/* Category pills */}
+        {/* category pills */}
         <div className="flex flex-wrap gap-1 mt-0.5">
           {(Array.isArray(place.category) ? place.category : [place.category]).map((cat) => (
             <span
@@ -354,6 +374,7 @@ function PlaceCard({
         </div>
       </div>
 
+      {/* buttons for each place card */}
       <div className="flex items-center gap-2 flex-shrink-0">
         {isEditing ? (
           <button
